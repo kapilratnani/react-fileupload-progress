@@ -156,6 +156,7 @@ class FileUploadProgress extends React.Component {
 FileUploadProgress.propTypes = {
   url: React.PropTypes.string.isRequired,
   binary: React.PropTypes.boolean,
+  disabled: React.PropTypes.boolean,
   headers: React.PropTypes.object,
   formGetter: React.PropTypes.func,
   formRenderer: React.PropTypes.func,
@@ -174,7 +175,7 @@ FileUploadProgress.defaultProps = {
         <div>
           <input type="file" name="file"/>
         </div>
-        <input type="submit"/>
+        <input type="submit" disabled={this.props.disabled} />
       </form>
     ),
 
@@ -218,7 +219,8 @@ FileUploadProgress.defaultProps = {
   onLoad: (e, request) => {},
   onError: (e, request) => {},
   onAbort: (e, request) => {},
-  binary:false
+  binary:false,
+  disabled:false
 };
 
 export default FileUploadProgress;
