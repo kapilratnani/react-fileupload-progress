@@ -95,17 +95,39 @@ class FileUploadProgress extends React.Component {
     }
     return new FormData(ReactDom.findDOMNode(this.refs.form));
   }
-
+  _getBinaryData() {
+    return this.refs.form.querySelector('input[type="file"]').files[0];
+  }
   _doUpload() {
-    const form = this._getFormData();
     const req = new XMLHttpRequest();
     req.open('POST', this.props.url);
-
+    
+    this.setState({progress: -1});
+    var data = null;    
+    if(this.props.binary){
+        data = this._getBinaryData();
+        req.setRequestHeader("Content-type", "application/octet-stream");
+        req.setRequestHeader("Content-Disposition", "attachment; filename=\""+data.name+"\"");
+    }else{
+        var form = this._getFormData();
+        data = this.props.formCustomizer(form);
+    }
+      
+    if(this.props.headers){
+      var headers = this.props.headers;
+      for (var key in headers) {
+        if (headers.hasOwnProperty(key)) {
+          req.setRequestHeader(key, headers[key]);
+        }
+      }
+    }
+    
     req.addEventListener('load', (e) => {
       this.proxy.removeAllListeners(['abort']);
       const newState = { progress: 100 };
       if (req.status >= 200 && req.status <= 299) {
         this.setState(newState, () => {
+          e.filename = data.name;
           this.props.onLoad(e, req);
         });
       } else {
@@ -149,7 +171,7 @@ class FileUploadProgress extends React.Component {
     });
 
     this.props.beforeSend(req)
-              .send(this.props.formCustomizer(form));
+              .send(this.props.formCustomizer(data));
   }
 }
 
@@ -220,6 +242,7 @@ FileUploadProgress.defaultProps = {
   onError: (e, request) => {},
   onAbort: (e, request) => {},
   binary:false,
+  
   disabled:false
 };
 
