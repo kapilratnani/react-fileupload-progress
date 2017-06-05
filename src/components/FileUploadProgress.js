@@ -75,9 +75,13 @@ class FileUploadProgress extends React.Component {
       hasError: false,
     }, this._doUpload);
   }
-
+  
+  onFileSelection(e) {
+    this.props.onFileSelection(e.target.value); 
+  }
+  
   render() {
-    const formElement = this.props.formRenderer(this.onSubmit.bind(this));
+    const formElement = this.props.formRenderer(this.onSubmit.bind(this), this.onFileSelection.bind(this));
     const progessElement = this.props.progressRenderer(
                             this.state.progress, this.state.hasError, this.cancelUpload.bind(this));
 
@@ -189,15 +193,16 @@ FileUploadProgress.propTypes = {
   onLoad: React.PropTypes.func,
   onError: React.PropTypes.func,
   onAbort: React.PropTypes.func,
+  onFileSelection: React.PropTypes.func
 };
 
 FileUploadProgress.defaultProps = {
-  formRenderer: (onSubmit) => (
+  formRenderer: (onSubmit, onFileSelection) => (
       <form className="_react_fileupload_form_content" ref="form" method="post" onSubmit={onSubmit}>
         <div>
-          <input type="file" name="file"/>
+          <input type="file" name="file" onChange={onFileSelection} />
         </div>
-        <input type="submit" disabled={this.props.disabled} />
+        <input type="submit"  disabled={this.props.disabled} />
       </form>
     ),
 
@@ -241,8 +246,8 @@ FileUploadProgress.defaultProps = {
   onLoad: (e, request) => {},
   onError: (e, request) => {},
   onAbort: (e, request) => {},
+  onFileSelection:(selectedFile) => {},
   binary:false,
-  
   disabled:false
 };
 
