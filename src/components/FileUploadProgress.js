@@ -57,6 +57,7 @@ class FileUploadProgress extends React.Component {
     this.state = {
       progress: -1,
       hasError: false,
+      selectedFile:''
     };
   }
 
@@ -77,7 +78,8 @@ class FileUploadProgress extends React.Component {
   }
   
   onFileSelection(e) {
-    this.props.onFileSelection(e.target.value); 
+    this.props.onFileSelection(e.target.value);
+    this.setState({selectedFile:e.target.value, progress:-1}); 
   }
   
   render() {
@@ -103,10 +105,14 @@ class FileUploadProgress extends React.Component {
     return this.refs.form.querySelector('input[type="file"]').files[0];
   }
   _doUpload() {
+    
+    this.setState({progress: -1});
+    if(this.state.selectedFile == '')
+        return;
+        
     const req = new XMLHttpRequest();
     req.open('POST', this.props.url);
     
-    this.setState({progress: -1});
     var data = null;    
     if(this.props.binary){
         data = this._getBinaryData();
@@ -130,6 +136,7 @@ class FileUploadProgress extends React.Component {
       this.proxy.removeAllListeners(['abort']);
       const newState = { progress: 100 };
       if (req.status >= 200 && req.status <= 299) {
+        newState.selectedFile = '';
         this.setState(newState, () => {
           e.filename = data.name;
           this.props.onLoad(e, req);
@@ -200,7 +207,7 @@ FileUploadProgress.defaultProps = {
   formRenderer: (onSubmit, onFileSelection) => (
       <form className="_react_fileupload_form_content" ref="form" method="post" onSubmit={onSubmit}>
         <div>
-          <input type="file" name="file" onChange={onFileSelection} />
+          <input type="file" value={this.state.selectedFile} name="file" onChange={onFileSelection} />
         </div>
         <input type="submit"  disabled={this.props.disabled} />
       </form>
@@ -216,8 +223,9 @@ FileUploadProgress.defaultProps = {
         barStyle.backgroundColor = '#d9534f';
         message = (<span style={{ color: '#a94442' }}>Failed to upload ...</span>);
       }
-      if (progress === 100) {
-        message = (<span >Successfully uploaded</span>);
+      
+      if (progress === 100 && !hasError) {
+        message = (<span>Successfully uploaded</span>);
       }
 
       return (
